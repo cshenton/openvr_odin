@@ -2,9 +2,9 @@ package openvr
 
 import "core:c"
 
-VREye :: enum c.int {
-	Eye_Left = 0,
-	Eye_Right = 1,
+Eye :: enum c.int {
+	Left = 0,
+	Right = 1,
 }
 
 TextureType :: enum c.int {
@@ -88,7 +88,7 @@ TrackedDeviceProperty :: enum c.int {
 	HardwareRevision_Uint64 = 1017,
 	FirmwareVersion_Uint64 = 1018,
 	FPGAVersion_Uint64 = 1019,
-	VRCVersion_Uint64 = 1020,
+	CVersion_Uint64 = 1020,
 	RadioVersion_Uint64 = 1021,
 	DongleVersion_Uint64 = 1022,
 	BlockServerShutdown_Bool = 1023,
@@ -303,7 +303,7 @@ HmdTrackingStyle :: enum c.int {
 	InsideOutCameras = 3,
 }
 
-VRSubmitFlags :: enum c.int {
+SubmitFlags :: enum c.int {
 	Default = 0,
 	LensDistortionAlreadyApplied = 1,
 	GlRenderBuffer = 2,
@@ -317,7 +317,7 @@ VRSubmitFlags :: enum c.int {
 	Reserved3 = 65536,
 }
 
-VRState :: enum c.int {
+State :: enum c.int {
 	Undefined = -1,
 	Off = 0,
 	Searching = 1,
@@ -329,7 +329,7 @@ VRState :: enum c.int {
 	Ready_Alert_Low = 7,
 }
 
-VREventType :: enum c.int {
+EventType :: enum c.int {
 	None = 0,
 	TrackedDeviceActivated = 100,
 	TrackedDeviceDeactivated = 101,
@@ -509,7 +509,7 @@ DeviceActivityLevel :: enum c.int {
 	Idle_Timeout = 4,
 }
 
-VRButtonId :: enum c.int {
+ButtonId :: enum c.int {
 	System = 0,
 	ApplicationMenu = 1,
 	Grip = 2,
@@ -533,7 +533,7 @@ VRButtonId :: enum c.int {
 	Max = 64,
 }
 
-VRMouseButton :: enum c.int {
+MouseButton :: enum c.int {
 	Left = 1,
 	Right = 2,
 	Middle = 4,
@@ -557,7 +557,7 @@ HDCPError :: enum c.int {
 	Unknown = 4,
 }
 
-VRComponentProperty :: enum c.int {
+ComponentProperty :: enum c.int {
 	IsStatic = 1,
 	IsVisible = 2,
 	IsTouched = 4,
@@ -566,7 +566,7 @@ VRComponentProperty :: enum c.int {
 	IsHighlighted = 32,
 }
 
-VRInputError :: enum c.int {
+InputError :: enum c.int {
 	None = 0,
 	NameNotFound = 1,
 	WrongType = 2,
@@ -590,7 +590,7 @@ VRInputError :: enum c.int {
 	InvalidRenderModel = 20,
 }
 
-VRSpatialAnchorError :: enum c.int {
+SpatialAnchorError :: enum c.int {
 	Success = 0,
 	Internal = 1,
 	UnknownHandle = 2,
@@ -614,16 +614,16 @@ HiddenAreaMeshType :: enum c.int {
 	Max = 3,
 }
 
-VRControllerAxisType :: enum c.int {
+ControllerAxisType :: enum c.int {
 	None = 0,
 	TrackPad = 1,
 	Joystick = 2,
 	Trigger = 3,
 }
 
-VRControllerEventOutputType :: enum c.int {
+ControllerEventOutputType :: enum c.int {
 	OSEvents = 0,
-	VREvents = 1,
+	Events = 1,
 }
 
 CollisionBoundsStyle :: enum c.int {
@@ -635,7 +635,7 @@ CollisionBoundsStyle :: enum c.int {
 	Count = 5,
 }
 
-VROverlayError :: enum c.int {
+OverlayError :: enum c.int {
 	None = 0,
 	UnknownOverlay = 10,
 	InvalidHandle = 11,
@@ -663,13 +663,13 @@ VROverlayError :: enum c.int {
 	TimedOut = 34,
 }
 
-VRApplicationType :: enum c.int {
+ApplicationType :: enum c.int {
 	Other = 0,
 	Scene = 1,
 	Overlay = 2,
 	Background = 3,
 	Utility = 4,
-	VRMonitor = 5,
+	Monitor = 5,
 	SteamWatchdog = 6,
 	Bootstrapper = 7,
 	WebHelper = 8,
@@ -681,13 +681,13 @@ VRApplicationType :: enum c.int {
 	Max = 14,
 }
 
-VRFirmwareError :: enum c.int {
+FirmwareError :: enum c.int {
 	None = 0,
 	Success = 1,
 	Fail = 2,
 }
 
-VRNotificationError :: enum c.int {
+NotificationError :: enum c.int {
 	OK = 0,
 	InvalidNotificationId = 100,
 	NotificationQueueFull = 101,
@@ -695,12 +695,12 @@ VRNotificationError :: enum c.int {
 	SystemWithUserValueAlreadyExists = 103,
 }
 
-VRSkeletalMotionRange :: enum c.int {
+SkeletalMotionRange :: enum c.int {
 	WithController = 0,
 	WithoutController = 1,
 }
 
-VRSkeletalTrackingLevel :: enum c.int {
+SkeletalTrackingLevel :: enum c.int {
 	Estimated = 0,
 	Partial = 1,
 	Full = 2,
@@ -708,7 +708,7 @@ VRSkeletalTrackingLevel :: enum c.int {
 	Max = 2,
 }
 
-VRInitError :: enum c.int {
+InitError :: enum c.int {
 	None = 0,
 	Unknown = 1,
 	Init_InstallationNotFound = 100,
@@ -923,7 +923,7 @@ VRInitError :: enum c.int {
 	LastError = 2001,
 }
 
-VRScreenshotType :: enum c.int {
+ScreenshotType :: enum c.int {
 	None = 0,
 	Mono = 1,
 	Stereo = 2,
@@ -932,12 +932,12 @@ VRScreenshotType :: enum c.int {
 	StereoPanorama = 5,
 }
 
-VRScreenshotPropertyFilenames :: enum c.int {
+ScreenshotPropertyFilenames :: enum c.int {
 	Preview = 0,
 	VR = 1,
 }
 
-VRTrackedCameraError :: enum c.int {
+TrackedCameraError :: enum c.int {
 	None = 0,
 	OperationFailed = 100,
 	InvalidHandle = 101,
@@ -957,21 +957,21 @@ VRTrackedCameraError :: enum c.int {
 	InvalidFrameBufferSize = 115,
 }
 
-VRTrackedCameraFrameLayout :: enum c.int {
+TrackedCameraFrameLayout :: enum c.int {
 	Mono = 1,
 	Stereo = 2,
 	VerticalLayout = 16,
 	HorizontalLayout = 32,
 }
 
-VRTrackedCameraFrameType :: enum c.int {
+TrackedCameraFrameType :: enum c.int {
 	Distorted = 0,
 	Undistorted = 1,
 	MaximumUndistorted = 2,
 	MAX_CAMERA_FRAME_TYPES = 3,
 }
 
-VRDistortionFunctionType :: enum c.int {
+DistortionFunctionType :: enum c.int {
 	None = 0,
 	FTheta = 1,
 	Extended_FTheta = 2,
@@ -984,7 +984,7 @@ VSync :: enum c.int {
 	NoWaitRender = 2,
 }
 
-VRMuraCorrectionMode :: enum c.int {
+MuraCorrectionMode :: enum c.int {
 	EVRMuraCorrectionMode_Default = 0,
 	EVRMuraCorrectionMode_NoCorrection = 1,
 }
@@ -998,7 +998,7 @@ Imu_OffScaleFlags :: enum c.int {
 	GyroZ = 32,
 }
 
-VRApplicationError :: enum c.int {
+ApplicationError :: enum c.int {
 	None = 0,
 	AppKeyAlreadyExists = 100,
 	NoManifest = 101,
@@ -1023,7 +1023,7 @@ VRApplicationError :: enum c.int {
 	NotImplemented = 300,
 }
 
-VRApplicationProperty :: enum c.int {
+ApplicationProperty :: enum c.int {
 	Name_String = 0,
 	LaunchType_String = 11,
 	WorkingDirectory_String = 12,
@@ -1044,7 +1044,7 @@ VRApplicationProperty :: enum c.int {
 	LastLaunchTime_Uint64 = 70,
 }
 
-VRSceneApplicationState :: enum c.int {
+SceneApplicationState :: enum c.int {
 	None = 0,
 	Starting = 1,
 	Quitting = 2,
@@ -1074,7 +1074,7 @@ ChaperoneImportFlags :: enum c.int {
 	EChaperoneImport_BoundsOnly = 1,
 }
 
-VRCompositorError :: enum c.int {
+CompositorError :: enum c.int {
 	None = 0,
 	RequestFailed = 1,
 	IncompatibleVersion = 100,
@@ -1090,18 +1090,18 @@ VRCompositorError :: enum c.int {
 	AlreadySet = 110,
 }
 
-VRCompositorTimingMode :: enum c.int {
+CompositorTimingMode :: enum c.int {
 	Implicit = 0,
 	Explicit_RuntimePerformsPostPresentHandoff = 1,
 	Explicit_ApplicationPerformsPostPresentHandoff = 2,
 }
 
-VROverlayInputMethod :: enum c.int {
+OverlayInputMethod :: enum c.int {
 	None = 0,
 	Mouse = 1,
 }
 
-VROverlayTransformType :: enum c.int {
+OverlayTransformType :: enum c.int {
 	Invalid = -1,
 	Absolute = 0,
 	TrackedDeviceRelative = 1,
@@ -1114,7 +1114,7 @@ VROverlayTransformType :: enum c.int {
 	Projection = 8,
 }
 
-VROverlayFlags :: enum c.int {
+OverlayFlags :: enum c.int {
 	NoDashboardTab = 8,
 	SendVRDiscreteScrollEvents = 64,
 	SendVRTouchpadEvents = 128,
@@ -1135,7 +1135,7 @@ VROverlayFlags :: enum c.int {
 	IgnoreTextureAlpha = 4194304,
 }
 
-VRMessageOverlayResponse :: enum c.int {
+MessageOverlayResponse :: enum c.int {
 	ButtonPress_0 = 0,
 	ButtonPress_1 = 1,
 	ButtonPress_2 = 2,
@@ -1156,7 +1156,7 @@ GamepadTextInputLineMode :: enum c.int {
 	MultipleLines = 1,
 }
 
-VROverlayIntersectionMaskPrimitiveType :: enum c.int {
+OverlayIntersectionMaskPrimitiveType :: enum c.int {
 	Rectangle = 0,
 	Circle = 1,
 }
@@ -1178,7 +1178,7 @@ HeadsetViewMode_t :: enum c.int {
 	Both = 2,
 }
 
-VRRenderModelError :: enum c.int {
+RenderModelError :: enum c.int {
 	None = 0,
 	Loading = 100,
 	NotSupported = 200,
@@ -1194,7 +1194,7 @@ VRRenderModelError :: enum c.int {
 	InvalidTexture = 400,
 }
 
-VRRenderModelTextureFormat :: enum c.int {
+RenderModelTextureFormat :: enum c.int {
 	RGBA8_SRGB = 0,
 	BC2 = 1,
 	BC4 = 2,
@@ -1203,13 +1203,13 @@ VRRenderModelTextureFormat :: enum c.int {
 	RGBA16_FLOAT = 5,
 }
 
-VRNotificationType :: enum c.int {
+NotificationType :: enum c.int {
 	Transient = 0,
 	Persistent = 1,
 	Transient_SystemWithUserValue = 2,
 }
 
-VRNotificationStyle :: enum c.int {
+NotificationStyle :: enum c.int {
 	None = 0,
 	Application = 100,
 	Contact_Disabled = 200,
@@ -1217,7 +1217,7 @@ VRNotificationStyle :: enum c.int {
 	Contact_Active = 202,
 }
 
-VRSettingsError :: enum c.int {
+SettingsError :: enum c.int {
 	None = 0,
 	IPCFailed = 1,
 	WriteFailed = 2,
@@ -1226,7 +1226,7 @@ VRSettingsError :: enum c.int {
 	UnsetSettingHasNoDefault = 5,
 }
 
-VRScreenshotError :: enum c.int {
+ScreenshotError :: enum c.int {
 	None = 0,
 	RequestFailed = 1,
 	IncompatibleVersion = 100,
@@ -1235,19 +1235,19 @@ VRScreenshotError :: enum c.int {
 	ScreenshotAlreadyInProgress = 108,
 }
 
-VRSkeletalTransformSpace :: enum c.int {
+SkeletalTransformSpace :: enum c.int {
 	Model = 0,
 	Parent = 1,
 }
 
-VRSkeletalReferencePose :: enum c.int {
+SkeletalReferencePose :: enum c.int {
 	BindPose = 0,
 	OpenHand = 1,
 	Fist = 2,
 	GripLimit = 3,
 }
 
-VRFinger :: enum c.int {
+Finger :: enum c.int {
 	Thumb = 0,
 	Index = 1,
 	Middle = 2,
@@ -1256,7 +1256,7 @@ VRFinger :: enum c.int {
 	Count = 5,
 }
 
-VRFingerSplay :: enum c.int {
+FingerSplay :: enum c.int {
 	Thumb_Index = 0,
 	Index_Middle = 1,
 	Middle_Ring = 2,
@@ -1264,17 +1264,17 @@ VRFingerSplay :: enum c.int {
 	Count = 4,
 }
 
-VRSummaryType :: enum c.int {
+SummaryType :: enum c.int {
 	FromAnimation = 0,
 	FromDevice = 1,
 }
 
-VRInputFilterCancelType :: enum c.int {
+InputFilterCancelType :: enum c.int {
 	Timers = 0,
 	Momentum = 1,
 }
 
-VRInputStringBits :: enum c.int {
+InputStringBits :: enum c.int {
 	Hand = 1,
 	ControllerType = 2,
 	InputSource = 4,
@@ -1297,7 +1297,7 @@ IOBufferMode :: enum c.int {
 	Create = 512,
 }
 
-VRDebugError :: enum c.int {
+DebugError :: enum c.int {
 	Success = 0,
 	BadParameter = 1,
 }
