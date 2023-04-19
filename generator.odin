@@ -16,6 +16,7 @@ main :: proc() {
 	generate_typedefs(api_object["typedefs"].(json.Array))
 	generate_enums(api_object["enums"].(json.Array))
 	generate_structs(api_object["structs"].(json.Array))
+	generate_methods(api_object["methods"].(json.Array))
 
 	for k, v in api_object {
 		fmt.println(k)
@@ -23,11 +24,65 @@ main :: proc() {
 }
 
 TYPEDEF_MAP := map[string]string {
-	"uint32_t" = "u32",
-	"uint64_t" = "u64",
-	"int32_t"  = "i32",
-	"int64_t"  = "i64",
-	"void *"   = "rawptr",
+	"uint8_t"                     = "u8",
+	"uint16_t"                    = "u16",
+	"uint32_t"                    = "u32",
+	"uint64_t"                    = "u64",
+	"int8_t"                      = "i8",
+	"int16_t"                     = "i16",
+	"int32_t"                     = "i32",
+	"int64_t"                     = "i64",
+	"void *"                      = "rawptr",
+	"_Bool"                       = "bool",
+	"char"                        = "u8",
+	"float"                       = "f32",
+	"double"                      = "f64",
+	"const uint8_t *"             = "[^]u8",
+	"const char *"                = "cstring",
+	"char *"                      = "cstring",
+	"struct VkInstance_T *"       = "vk.Instance",
+	"struct VkDevice_T *"         = "vk.Device",
+	"struct VkPhysicalDevice_T *" = "vk.PhysicalDevice",
+	"struct VkQueue_T *"          = "vk.Queue",
+	"struct ID3D12Resource *"     = "^D3D12.IResource",
+	"struct ID3D12CommandQueue *" = "^D3D12.ICommandQueue",
+	"vr::IVRSystem"               = "ISystem",
+	"vr::IVRChaperone"            = "IChaperone",
+	"vr::IVRChaperoneSetup"       = "IChaperoneSetup",
+	"vr::IVRCompositor"           = "ICompositor",
+	"vr::IVRHeadsetView"          = "IHeadsetView",
+	"vr::IVROverlay"              = "IOverlay",
+	"vr::IVROverlayView"          = "IOverlayView",
+	"vr::IVRResources"            = "IResources",
+	"vr::IVRRenderModels"         = "IRenderModels",
+	"vr::IVRExtendedDisplay"      = "IExtendedDisplay",
+	"vr::IVRSettings"             = "ISettings",
+	"vr::IVRApplications"         = "IApplications",
+	"vr::IVRTrackedCamera"        = "ITrackedCamera",
+	"vr::IVRScreenshots"          = "IScreenshots",
+	"vr::IVRDriverManager"        = "IDriverManager",
+	"vr::IVRInput"                = "IInput",
+	"vr::IVRIOBuffer"             = "IIOBuffer",
+	"vr::IVRSpatialAnchors"       = "ISpatialAnchors",
+	"vr::IVRDebug"                = "IDebug",
+	"vr::IVRNotifications"        = "INotifications",
+	"vr::IVRProperties"           = "IProperties",
+}
+
+REDUNDANT_TYPEDEFS := map[string]bool {
+	"TrackedDeviceClass"                    = true,
+	"ColorSpace"                            = true,
+	"TrackingUniverseOrigin"                = true,
+	"TrackedDeviceProperty"                 = true,
+	"TrackedPropertyError"                  = true,
+	"SubmitFlags"                           = true,
+	"State"                                 = true,
+	"CollisionBoundsStyle"                  = true,
+	"OverlayError"                          = true,
+	"FirmwareError"                         = true,
+	"CompositorError"                       = true,
+	"Event_Data"                            = true,
+	"OverlayIntersectionMaskPrimitive_Data" = true,
 }
 
 generate_typedefs :: proc(defs: json.Array) {
@@ -40,13 +95,10 @@ generate_typedefs :: proc(defs: json.Array) {
 		typedef := def_obj["typedef"].(json.String)
 		dtype := def_obj["type"].(json.String)
 
-		if dtype not_in TYPEDEF_MAP {
-			fmt.println("Skipping", def_obj)
-			continue
-		}
-
-		type_trim := strings.trim_prefix(typedef, "vr::")
-		otype := TYPEDEF_MAP[dtype]
+		type_trim := trim_struct_name(typedef)
+		otype, ok := TYPEDEF_MAP[dtype]
+		if !ok {otype = field_type_convert(dtype)}
+		if otype in REDUNDANT_TYPEDEFS {continue}
 		strings.write_string(&b, fmt.aprintf("{} :: {}\n", type_trim, otype))
 	}
 
@@ -143,10 +195,99 @@ trim_struct_name :: proc(name: string) -> string {
 	return struct_trim
 }
 
+trim_handle_name :: proc(name: string) -> string {
+	handle_trim := strings.trim_prefix(name, "vr::")
+	handle_trim = strings.trim_prefix(handle_trim, "VR")
+	handle_trim = strings.trim_suffix(handle_trim, "_t")
+	return handle_trim
+}
+
+trim_field_name :: proc(name: string) -> string {
+	field_trim := strings.trim_prefix(name, "m_")
+	// field_trim = strings.trim_prefix(field_trim, "fl")
+	// field_trim = strings.trim_prefix(field_trim, "n")
+	// field_trim = strings.trim_prefix(field_trim, "un")
+	return field_trim
+}
+
+field_type_convert :: proc(name: string) -> string {
+	// Check for simple match
+	typename, ok := TYPEDEF_MAP[name]
+	if ok {return typename}
+	tokens := strings.split(name, " ")
+	st := 0
+	en := len(tokens) - 1
+	is_const := false
+	is_union := false
+	is_enum := false
+	is_class := false
+	is_struct := false
+	is_ptr := false
+	is_array := false
+	vr_name := ""
+	array_string := ""
+
+	if tokens[st] == "const" {
+		is_const = true
+		st += 1
+	}
+
+	if tokens[st] == "union" {
+		is_union = true
+		st += 1
+	}
+
+
+	if tokens[st] == "enum" {
+		is_enum = true
+		st += 1
+	}
+
+
+	if tokens[st] == "struct" {
+		is_struct = true
+		st += 1
+	}
+
+	if tokens[st] == "class" {
+		is_class = true
+		st += 1
+	}
+
+	if tokens[en] == "*" {
+		is_ptr = true
+		en -= 1
+	}
+
+	if strings.has_suffix(tokens[en], "]") {
+		is_array = true
+		array_string = tokens[en]
+		en -= 1
+	}
+
+	if st != en {fmt.println(name)}
+
+	corename := tokens[st]
+	coretype, type_ok := TYPEDEF_MAP[corename]
+	if !type_ok {
+		coretype = trim_enum_name(corename)
+		coretype = trim_struct_name(coretype)
+	}
+	result := fmt.aprintf("{}{}{}", is_ptr ? "^" : "", array_string, coretype)
+	return result
+}
+
+STRUCT_PRELUDE :: `
+import vk "vendor:vulkan"
+import D3D11 "vendor:directx/d3d11"
+import D3D12 "vendor:directx/d3d12"
+
+`
+
 generate_structs :: proc(structs: json.Array) {
 	b := strings.builder_make()
-	strings.write_string(&b, "package openvr\n\n")
-	// strings.write_string(&b, "import \"core:c\"\n\n")
+	strings.write_string(&b, "package openvr\n")
+	strings.write_string(&b, STRUCT_PRELUDE)
 
 	for str in structs {
 		struct_obj := str.(json.Object)
@@ -167,7 +308,13 @@ generate_structs :: proc(structs: json.Array) {
 		}
 
 		for field in struct_fields {
+			field_obj := field.(json.Object)
+			fieldname := field_obj["fieldname"].(json.String)
+			fieldtype := field_obj["fieldtype"].(json.String)
+			odin_type := field_type_convert(fieldtype)
 
+			fieldname_trim := trim_field_name(fieldname)
+			strings.write_string(&b, fmt.aprintf("\t{}: {},\n", fieldname_trim, odin_type))
 		}
 
 		strings.write_string(&b, "}\n\n")
@@ -176,6 +323,40 @@ generate_structs :: proc(structs: json.Array) {
 	os.write_entire_file("openvr/structs.odin", b.buf[:])
 }
 
-generate_methods :: proc() {
+INTERFACE_NAMES := [?]string{
+	"IVRSystem",
+	"IVRChaperone",
+	"IVRChaperoneSetup",
+	"IVRCompositor",
+	"IVRHeadsetView",
+	"IVROverlay",
+	"IVROverlayView",
+	"IVRResources",
+	"IVRRenderModels",
+	"IVRExtendedDisplay",
+	"IVRSettings",
+	"IVRApplications",
+	"IVRTrackedCamera",
+	"IVRScreenshots",
+	"IVRDriverManager",
+	"IVRInput",
+	"IVRIOBuffer",
+	"IVRSpatialAnchors",
+	"IVRDebug",
+	"IVRNotifications",
+	"IVRProperties",
+}
+
+generate_methods :: proc(methods: json.Array) {
+	b := strings.builder_make()
+	strings.write_string(&b, "package openvr\n\n")
+
+	for iface in INTERFACE_NAMES {
+		iface_trim := strings.trim_prefix(iface, "IVR")
+		strings.write_string(&b, fmt.aprintf("I{} :: struct {{\n", iface_trim))
+		strings.write_string(&b, "}\n\n")
+	}
+
+	os.write_entire_file("openvr/procedures.odin", b.buf[:])
 
 }
