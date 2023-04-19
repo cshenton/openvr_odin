@@ -1,4 +1,3 @@
-
 package openvr
 
 foreign import openvr_api "openvr_api.lib"

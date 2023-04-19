@@ -119,7 +119,11 @@ generate_consts :: proc(consts: json.Array) {
 		constval := con_obj["constval"].(json.String)
 
 		if consttype == "const char *const" || consttype == "const char *" {
-			strings.write_string(&b, fmt.aprintf("{} :: \"{}\"\n", constname, constval))
+			if strings.has_suffix(constname, "Version") {
+				strings.write_string(&b, fmt.aprintf("{} :: \"FnTable:{}\"\n", constname, constval))
+			} else {
+				strings.write_string(&b, fmt.aprintf("{} :: \"{}\"\n", constname, constval))
+			}
 		} else {
 			strings.write_string(&b, fmt.aprintf("{} :: {}\n", constname, constval))
 		}
@@ -394,7 +398,7 @@ generate_methods :: proc(methods: json.Array) {
 			meth_ret := meth_obj["returntype"].(json.String)
 			ret_type := field_type_convert(meth_ret)
 
-			strings.write_string(&b, fmt.aprintf("\t{}: proc \"system\" (", meth_name))
+			strings.write_string(&b, fmt.aprintf("\t{}: proc \"stdcall\" (", meth_name))
 			if ok {
 				meth_pars := meth_params.(json.Array)
 				for par, id in meth_pars {
@@ -420,8 +424,7 @@ generate_methods :: proc(methods: json.Array) {
 	os.write_entire_file("openvr/procedures.odin", b.buf[:])
 
 }
-ENTRYPOINTS :: `
-package openvr
+ENTRYPOINTS :: `package openvr
 
 foreign import openvr_api "openvr_api.lib"
 foreign openvr_api {
