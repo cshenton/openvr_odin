@@ -26,6 +26,7 @@ main :: proc() {
 
 TYPEDEF_MAP := map[string]string {
 	"uint8_t"                     = "u8",
+	"unsigned short"              = "u16",
 	"uint16_t"                    = "u16",
 	"uint32_t"                    = "u32",
 	"uint64_t"                    = "u64",
@@ -34,6 +35,9 @@ TYPEDEF_MAP := map[string]string {
 	"int32_t"                     = "i32",
 	"int64_t"                     = "i64",
 	"void *"                      = "rawptr",
+	"const void *"                = "rawptr",
+	"void **"                     = "^rawptr",
+	"const void **"               = "^rawptr",
 	"_Bool"                       = "bool",
 	"char"                        = "u8",
 	"float"                       = "f32",
@@ -164,6 +168,7 @@ trim_enum_name :: proc(name: string) -> string {
 	enum_trim := strings.trim_prefix(name, "vr::")
 	enum_trim = strings.trim_prefix(enum_trim, "E")
 	enum_trim = strings.trim_prefix(enum_trim, "VR")
+	enum_trim = strings.trim_suffix(enum_trim, "_t")
 	return enum_trim
 }
 
@@ -242,6 +247,7 @@ field_type_convert :: proc(name: string) -> string {
 	is_class := false
 	is_struct := false
 	is_ptr := false
+	is_ptrptr := false
 	is_array := false
 	vr_name := ""
 	array_string := ""
@@ -278,6 +284,11 @@ field_type_convert :: proc(name: string) -> string {
 		en -= 1
 	}
 
+	if tokens[en] == "**" {
+		is_ptr = true
+		en -= 1
+	}
+
 	if strings.has_suffix(tokens[en], "]") {
 		is_array = true
 		array_string = tokens[en]
@@ -292,7 +303,7 @@ field_type_convert :: proc(name: string) -> string {
 		coretype = trim_enum_name(corename)
 		coretype = trim_struct_name(coretype)
 	}
-	result := fmt.aprintf("{}{}{}", is_ptr ? "^" : "", array_string, coretype)
+	result := fmt.aprintf("{}{}{}{}", is_ptrptr ? "^^" : "", is_ptr ? "^" : "", array_string, coretype)
 	return result
 }
 
@@ -343,36 +354,69 @@ generate_structs :: proc(structs: json.Array) {
 }
 
 INTERFACE_NAMES := [?]string{
-	"IVRSystem",
-	"IVRChaperone",
-	"IVRChaperoneSetup",
-	"IVRCompositor",
-	"IVRHeadsetView",
-	"IVROverlay",
-	"IVROverlayView",
-	"IVRResources",
-	"IVRRenderModels",
-	"IVRExtendedDisplay",
-	"IVRSettings",
-	"IVRApplications",
-	"IVRTrackedCamera",
-	"IVRScreenshots",
-	"IVRDriverManager",
-	"IVRInput",
-	"IVRIOBuffer",
-	"IVRSpatialAnchors",
-	"IVRDebug",
-	"IVRNotifications",
-	"IVRProperties",
+	"vr::IVRSystem",
+	"vr::IVRChaperone",
+	"vr::IVRChaperoneSetup",
+	"vr::IVRCompositor",
+	"vr::IVRHeadsetView",
+	"vr::IVROverlay",
+	"vr::IVROverlayView",
+	"vr::IVRResources",
+	"vr::IVRRenderModels",
+	"vr::IVRExtendedDisplay",
+	"vr::IVRSettings",
+	"vr::IVRApplications",
+	"vr::IVRTrackedCamera",
+	"vr::IVRScreenshots",
+	"vr::IVRDriverManager",
+	"vr::IVRInput",
+	"vr::IVRIOBuffer",
+	"vr::IVRSpatialAnchors",
+	"vr::IVRDebug",
+	"vr::IVRNotifications",
+	"vr::IVRProperties",
+	"vr::IVRPaths",
+	"vr::IVRBlockQueue",
 }
+
+// GetResourceAllocationInfo2: proc "stdcall" (this: ^IDevice8, RetVal: ^RESOURCE_ALLOCATION_INFO, visibleMask: u32, numResourceDescs: u32, pResourceDescs: ^RESOURCE_DESC1, pResourceAllocationInfo1: ^RESOURCE_ALLOCATION_INFO1),
 
 generate_methods :: proc(methods: json.Array) {
 	b := strings.builder_make()
-	strings.write_string(&b, "package openvr\n\n")
+	strings.write_string(&b, "package openvr\n")
+	strings.write_string(&b, STRUCT_PRELUDE)
 
 	for iface in INTERFACE_NAMES {
-		iface_trim := strings.trim_prefix(iface, "IVR")
+		iface_trim := strings.trim_prefix(iface, "vr::IVR")
 		strings.write_string(&b, fmt.aprintf("I{} :: struct {{\n", iface_trim))
+		for meth in methods {
+			meth_obj := meth.(json.Object)
+			if meth_obj["classname"].(json.String) != iface {continue}
+			meth_name := meth_obj["methodname"].(json.String)
+			meth_params, ok := meth_obj["params"]
+			meth_ret := meth_obj["returntype"].(json.String)
+			ret_type := field_type_convert(meth_ret)
+
+			strings.write_string(&b, fmt.aprintf("\t{}: proc \"stdcall\" (", meth_name))
+			if ok {
+				meth_pars := meth_params.(json.Array)
+				for par, id in meth_pars {
+					par_obj := par.(json.Object)
+					parname := par_obj["paramname"].(json.String)
+					partype := par_obj["paramtype"].(json.String)
+					odin_type := field_type_convert(partype)
+					strings.write_string(&b, fmt.aprintf("{}: {}", parname, odin_type))
+					if id == len(meth_pars) - 1 {break}
+					strings.write_string(&b, ", ")
+				}
+			}
+
+			if ret_type == "void" {
+				strings.write_string(&b, "),\n")
+			} else {
+				strings.write_string(&b, fmt.aprintf(") -> {},\n", ret_type))
+			}
+		}
 		strings.write_string(&b, "}\n\n")
 	}
 

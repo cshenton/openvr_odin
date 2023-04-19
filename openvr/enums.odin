@@ -1172,7 +1172,7 @@ DeviceType :: enum c.int {
 	Vulkan = 1,
 }
 
-HeadsetViewMode_t :: enum c.int {
+HeadsetViewMode :: enum c.int {
 	Left = 0,
 	Right = 1,
 	Both = 2,
