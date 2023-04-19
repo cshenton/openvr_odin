@@ -18,10 +18,7 @@ main :: proc() {
 	generate_structs(api_object["structs"].(json.Array))
 	generate_methods(api_object["methods"].(json.Array))
 	generate_consts(api_object["consts"].(json.Array))
-
-	for k, v in api_object {
-		fmt.println(k)
-	}
+	generate_entrypoints()
 }
 
 TYPEDEF_MAP := map[string]string {
@@ -397,7 +394,7 @@ generate_methods :: proc(methods: json.Array) {
 			meth_ret := meth_obj["returntype"].(json.String)
 			ret_type := field_type_convert(meth_ret)
 
-			strings.write_string(&b, fmt.aprintf("\t{}: proc \"stdcall\" (", meth_name))
+			strings.write_string(&b, fmt.aprintf("\t{}: proc \"system\" (", meth_name))
 			if ok {
 				meth_pars := meth_params.(json.Array)
 				for par, id in meth_pars {
@@ -422,4 +419,37 @@ generate_methods :: proc(methods: json.Array) {
 
 	os.write_entire_file("openvr/procedures.odin", b.buf[:])
 
+}
+ENTRYPOINTS :: `
+package openvr
+
+foreign import openvr_api "openvr_api.lib"
+foreign openvr_api {
+	@(link_name = "VR_InitInternal")
+	Init :: proc "system" (peError: ^InitError, eType: ApplicationType) -> rawptr ---
+	
+	@(link_name = "VR_ShutdownInternal")
+	Shutdown :: proc "system" () ---
+
+	@(link_name = "VR_IsHmdPresent")
+	IsHmdPresent :: proc "system" () -> bool ---
+
+	@(link_name = "VR_GetGenericInterface")
+	GetGenericInterface :: proc "system" (pchInterfaceVersion: cstring, peError: ^InitError) -> rawptr ---
+
+	@(link_name = "VR_IsRuntimeInstalled")
+	IsRuntimeInstalled :: proc "system" () -> bool ---
+
+	@(link_name = "VR_GetVRInitErrorAsSymbol")
+	GetInitErrorAsSymbol :: proc "system" (error: InitError) -> cstring ---
+
+	@(link_name = "VR_GetVRInitErrorAsEnglishDescription")
+	GetInitErrorAsDescription :: proc "system" (error: InitError) -> cstring ---
+}
+`
+
+generate_entrypoints :: proc() {
+	b := strings.builder_make()
+	strings.write_string(&b, ENTRYPOINTS)
+	os.write_entire_file("openvr/entrypoints.odin", b.buf[:])
 }
