@@ -17,6 +17,7 @@ main :: proc() {
 	generate_enums(api_object["enums"].(json.Array))
 	generate_structs(api_object["structs"].(json.Array))
 	generate_methods(api_object["methods"].(json.Array))
+	generate_consts(api_object["consts"].(json.Array))
 
 	for k, v in api_object {
 		fmt.println(k)
@@ -105,6 +106,27 @@ generate_typedefs :: proc(defs: json.Array) {
 	os.write_entire_file("openvr/defs.odin", b.buf[:])
 }
 
+
+generate_consts :: proc(consts: json.Array) {
+	b := strings.builder_make()
+	strings.write_string(&b, "package openvr\n\n")
+
+	for con in consts {
+		con_obj := con.(json.Object)
+		constname := con_obj["constname"].(json.String)
+		consttype := con_obj["consttype"].(json.String)
+		constval := con_obj["constval"].(json.String)
+
+		if consttype == "const char *const" || consttype == "const char *" {
+			strings.write_string(&b, fmt.aprintf("{} :: \"{}\"\n", constname, constval))
+		} else {
+			strings.write_string(&b, fmt.aprintf("{} :: {}\n", constname, constval))
+		}
+	}
+
+	os.write_entire_file("openvr/consts.odin", b.buf[:])
+}
+
 ENUM_NONSTANDARD_PREFIXES := [?]string{
 	"k_",
 	"Prop_",
@@ -184,9 +206,6 @@ generate_enums :: proc(enums: json.Array) {
 	os.write_entire_file("openvr/enums.odin", b.buf[:])
 }
 
-generate_consts :: proc() {
-
-}
 
 trim_struct_name :: proc(name: string) -> string {
 	struct_trim := strings.trim_prefix(name, "vr::")
