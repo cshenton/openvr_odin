@@ -252,9 +252,9 @@ IResources :: struct {
 }
 
 IRenderModels :: struct {
-	LoadRenderModel_Async: proc "stdcall" (pchRenderModelName: cstring, ppRenderModel: ^RenderModel) -> RenderModelError,
+	LoadRenderModel_Async: proc "stdcall" (pchRenderModelName: cstring, ppRenderModel: ^^RenderModel) -> RenderModelError,
 	FreeRenderModel: proc "stdcall" (pRenderModel: ^RenderModel),
-	LoadTexture_Async: proc "stdcall" (textureId: TextureID, ppTexture: ^RenderModel_TextureMap) -> RenderModelError,
+	LoadTexture_Async: proc "stdcall" (textureId: TextureID, ppTexture: ^^RenderModel_TextureMap) -> RenderModelError,
 	FreeTexture: proc "stdcall" (pTexture: ^RenderModel_TextureMap),
 	LoadTextureD3D11_Async: proc "stdcall" (textureId: TextureID, pD3D11Device: rawptr, ppD3D11Texture2D: ^rawptr) -> RenderModelError,
 	LoadIntoTextureD3D11_Async: proc "stdcall" (textureId: TextureID, pDstTexture: rawptr) -> RenderModelError,

@@ -286,7 +286,7 @@ field_type_convert :: proc(name: string) -> string {
 	}
 
 	if tokens[en] == "**" {
-		is_ptr = true
+		is_ptrptr = true
 		en -= 1
 	}
 
@@ -405,6 +405,7 @@ generate_methods :: proc(methods: json.Array) {
 					par_obj := par.(json.Object)
 					parname := par_obj["paramname"].(json.String)
 					partype := par_obj["paramtype"].(json.String)
+
 					odin_type := field_type_convert(partype)
 					strings.write_string(&b, fmt.aprintf("{}: {}", parname, odin_type))
 					if id == len(meth_pars) - 1 {break}
