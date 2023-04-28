@@ -40,12 +40,11 @@ run_demo :: proc() -> (err: AppError) {
 
 	width, height: u32
 	vr_system.GetRecommendedRenderTargetSize(&width, &height)
-	fmt.println("Render Target Size:", width, "x", height)
 	win_width := u32(width / 2)
 	win_height := u32(height / 2)
 
 	// Create Window
-	window := SDL.CreateWindow("Hello OpenVR", 700, 100, i32(win_width), i32(win_height), {.SHOWN, .OPENGL})
+	window := SDL.CreateWindow("Hello Odin OpenVR", 700, 100, i32(win_width), i32(win_height), {.SHOWN, .OPENGL})
 	defer SDL.DestroyWindow(window)
 	if window == nil {
 		SDL.ShowSimpleMessageBox({.ERROR}, "vr.Init Failed", "failed to create window", nil)
@@ -87,7 +86,6 @@ run_demo :: proc() -> (err: AppError) {
 	for i in 1 ..< MAX_DEVICES {
 		if !vr_system.IsTrackedDeviceConnected(u32(i)) {continue}
 		render_models[i] = render_model_setup(u32(i), vr_system, vr_rendermodels) or_return
-		fmt.println(render_models[i])
 	}
 
 	for {
