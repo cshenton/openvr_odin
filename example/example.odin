@@ -99,8 +99,6 @@ main :: proc() {
 		err := vr_compositor.WaitGetPoses(&render_poses[0], 15, &game_poses[0], 15)
 		if err != .None {panic(fmt.aprintln(err))}
 
-		// GetFrameTimings seems useful for a perf graph without the overlay
-		// GetFrameTimeRemaining could also be useful?
-		// SubmitExplicitTimingData before ExecuteCommandLists? Must?
+		// vr_compositor.Submit(...)
 	}
 }
