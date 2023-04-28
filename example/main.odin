@@ -1,6 +1,7 @@
 package openvr_example
 
 import "core:fmt"
+import "core:strings"
 import gl "vendor:OpenGL"
 import SDL "vendor:sdl2"
 import vr "../openvr"
@@ -9,6 +10,7 @@ import vr "../openvr"
 MAX_DEVICES :: vr.k_unMaxTrackedDeviceCount
 
 Error :: enum {
+	None,
 	GL_Error,
 	SDL_Error,
 }
@@ -46,10 +48,7 @@ run_demo :: proc() -> (err: AppError) {
 	// Create Window
 	window := SDL.CreateWindow("Hello Odin OpenVR", 700, 100, i32(win_width), i32(win_height), {.SHOWN, .OPENGL})
 	defer SDL.DestroyWindow(window)
-	if window == nil {
-		SDL.ShowSimpleMessageBox({.ERROR}, "vr.Init Failed", "failed to create window", nil)
-		return
-	}
+	if window == nil {return .SDL_Error}
 	SDL.GL_SetSwapInterval(0)
 
 	// Initialise OpenGL
@@ -68,8 +67,8 @@ run_demo :: proc() -> (err: AppError) {
 	defer delete(uniforms)
 
 	// Create framebuffers to render into
-	left_fbuf, left_col, left_depth := framebuffer_create(i32(width), i32(height))
-	right_fbuf, right_col, right_depth := framebuffer_create(i32(width), i32(height))
+	left_fbuf, left_col, left_depth := framebuffer_create(i32(width), i32(height)) or_return
+	right_fbuf, right_col, right_depth := framebuffer_create(i32(width), i32(height)) or_return
 
 	// Store our device data in flat arrays
 	render_poses: [MAX_DEVICES]vr.TrackedDevicePose
@@ -199,7 +198,7 @@ run_demo :: proc() -> (err: AppError) {
 	}
 }
 
-framebuffer_create :: proc(width, height: i32) -> (fbuf, col, depth: u32) {
+framebuffer_create :: proc(width, height: i32) -> (fbuf, col, depth: u32, err: Error) {
 	gl.GenFramebuffers(1, &fbuf)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, fbuf)
 
@@ -219,7 +218,8 @@ framebuffer_create :: proc(width, height: i32) -> (fbuf, col, depth: u32) {
 	gl.DrawBuffers(1, &draw_bufs[0])
 
 	if gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
-		panic("shite")
+		err = .GL_Error
+		return
 	}
 
 	return
@@ -238,7 +238,8 @@ read_mat :: proc(m: [3][4]f32) -> (r: matrix[4, 4]f32) {
 main :: proc() {
 	err := run_demo()
 	if err == nil {return}
-	fmt.println(err)
+	err_msg := strings.clone_to_cstring(fmt.aprintf("{}", err))
+	SDL.ShowSimpleMessageBox({.ERROR}, "Error in OpenVR Odin", err_msg, nil)
 }
 
 vertex_source := `#version 330 core
